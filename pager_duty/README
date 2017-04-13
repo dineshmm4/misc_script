@@ -1,0 +1,12 @@
+# Edit the pdconfig.py file and add appropriate values to generate csv report 
+
+# Execute as
+ /usr/local/bin/python pager_duty_report.py 
+
+# Output
+
+ A file by name PagerDutyReport_csvformat.csv will be generated
+
+# Requirments
+python 2.7 
+python pandas framework 
