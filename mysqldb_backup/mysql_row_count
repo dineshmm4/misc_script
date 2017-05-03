@@ -1,0 +1,47 @@
+#!/usr/local/bin/python
+import mysql.connector
+from mysql.connector import Error
+
+def connect():
+    """ connect to mysql DB """
+    try:
+        conn = mysql.connector.connect(host='HOST',database='DBNAME',user='USER',password='PASSWD')
+        
+        if conn.is_connected():
+            print("MysqlDB is connected")
+        else:
+            print("MysqlDB is not connected")
+            
+    except Error as e:
+        print("Error connecting to db",e)
+        
+    return(conn)
+
+
+
+def display_all_table_row_count():
+    query = "show tables"
+    cursor = conn.cursor()
+    cursor.execute(query)
+    rows=cursor.fetchall()
+    for tname in rows:
+        row_count(str(tname[0]))
+
+
+
+def row_count(tname):
+    query = "select count(*) from " + tname
+    cursor = conn.cursor()
+    cursor.execute(query)
+    rows=cursor.fetchall()
+    for count in rows:
+        print(tname,"-->>",count[0])
+    #print(query)
+
+
+
+if __name__ == '__main__':
+    conn=connect()
+    display_all_table_row_count()
+    conn.close()
+
