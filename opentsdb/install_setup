@@ -1,0 +1,96 @@
+##################################     Installing hbase ##############################################
+
+# cd /opt/
+# wget http://redrockdigimark.com/apachemirror/hbase/1.2.6/hbase-1.2.6-bin.tar.gz
+# tar xzvf hbase-1.2.6-bin.tar.gz
+
+# grep JAVA_HOME conf/hbase-env.sh | grep -v "#"
+export JAVA_HOME=/usr/
+
+
+tail -n -10 hbase-site.xml
+<configuration>
+<property>
+    <name>hbase.rootdir</name>
+    <value>file:///home/testuser/hbase</value>
+  </property>
+  <property>
+    <name>hbase.zookeeper.property.dataDir</name>
+    <value>/home/testuser/zookeeper</value>
+  </property>
+</configuration>
+
+# nohup /opt/hbase-1.2.6/bin/start-hbase.sh &
+
+# systemctl stop firewalld ; systemctl disable firewalld  
+
+
+# Hbase UI
+
+http://localhost:16010/master-status
+
+##################      opentsbd installation ######################
+
+# cat /etc/redhat-release
+CentOS Linux release 7.3.1611 (Core)
+
+#uname -a
+Linux optsdb.local.host.com 3.10.0-514.16.1.el7.x86_64 #1 SMP Wed Apr 12 15:04:24 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+
+#yum update
+
+# yum  install java-1.8.0-openjdk-1.8.0.131-3.b12.el7_3.x86_64 java-1.8.0-openjdk-devel-1.8.0.131-3.b12.el7_3.x86_64
+
+# grep JAVA_HOME .bashrc
+export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-3.b12.el7_3.x86_64/
+
+# yum install git
+
+# yum groupinstall 'Development Tools'
+
+# cd /opt
+# git clone git://github.com/OpenTSDB/opentsdb.git
+# cd opentsdb/
+# ./build.sh
+
+# cd /opt/opentsdb/build/
+
+# make install
+
+grep -v "#" /opt/opentsdb/src/opentsdb.conf
+
+tsd.network.port = 4242
+tsd.http.staticroot = /opt/opentsdb/build/staticroot/
+tsd.http.cachedir = /tmp/
+tsd.storage.hbase.zk_quorum = localhost
+
+create the opentsdb tables
+# env COMPRESSION=NONE HBASE_HOME=/opt/hbase-1.2.6/ ./src/create_table.sh
+
+nohup /opt/opentsdb/build/tsdb tsd --port=4242 --staticroot=/opt/opentsdb/build/staticroot/ --cachedir=/tmp/ &
+
+#  netstat -lpn | grep 4242
+tcp6       0      0 :::4242                 :::*                    LISTEN      3127/java
+
+# yum install gnuplot-4.6.2-3.el7.x86_64 gnuplot-common-4.6.2-3.el7.x86_64
+
+http://localhost:4242/
+
+# create the metrics key
+# /opt/opentsdb/build/tsdb mkmetric   cassloader.lag
+
+# load the data
+nc -w 5 10.32.4.246 4242
+
+put cassloader.lag 1498155026 0 topic=fact partition=0
+put cassloader.lag 1498155030 0 topic=fact partition=0
+
+# /opt/opentsdb/build/tsdb import /tmp/a
+
+cat /tmp/a
+
+cassloader.lag 1498155026 0 topic=fact partition=0
+cassloader.lag 1498155030 0 topic=fact partition=0
+
+
+
